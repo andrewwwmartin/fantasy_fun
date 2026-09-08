@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Digital Auctioneer &mdash; Host</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="app-header">
+      <h1>🔨 You're the Auctioneer</h1>
+    </header>
+
+    <div class="card stage">
+      <div class="item-name" id="itemName">Loading...</div>
+      <div class="bid-label" id="bidLabel">&nbsp;</div>
+      <div class="status-display state-idle" id="statusDisplay">Waiting to start</div>
+      <div class="bid-count" id="bidCount"></div>
+
+      <button class="big-bid-button" id="newBidBtn">🔔 New Bid</button>
+
+      <div class="control-row">
+        <button class="btn-secondary" id="cancelBtn">Undo / Hold</button>
+        <button class="btn-secondary" id="nextItemBtn">Next Item</button>
+      </div>
+
+      <button class="mute-btn" id="muteBtn">🔊 Voice On</button>
+      <div class="error" id="hostError"></div>
+    </div>
+
+    <div class="card">
+      <button class="settings-toggle" id="settingsToggle">⚙ Item &amp; timing settings</button>
+      <div id="settingsPanel" hidden>
+        <label for="itemNameInput">What's being bid on?</label>
+        <input type="text" id="itemNameInput" maxlength="120" />
+
+        <label for="bidLabelInput">Current bid (optional, e.g. "$150")</label>
+        <input type="text" id="bidLabelInput" maxlength="80" placeholder="Leave blank to just say a bid came in" />
+
+        <label>Seconds between calls</label>
+        <div class="timing-row">
+          <div>
+            <label for="onceDelay">Once</label>
+            <input type="number" id="onceDelay" min="1" max="30" />
+          </div>
+          <div>
+            <label for="twiceDelay">Twice</label>
+            <input type="number" id="twiceDelay" min="1" max="30" />
+          </div>
+          <div>
+            <label for="soldDelay">Sold</label>
+            <input type="number" id="soldDelay" min="1" max="30" />
+          </div>
+        </div>
+        <button class="btn-primary" id="saveSettingsBtn">Save Settings</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Share this auction</h2>
+      <p class="hint" style="margin-top:0;">Anyone with this link can watch and hear the auction live on their own phone or computer.</p>
+      <div class="share-box">
+        <strong>Auction code</strong>
+        <span id="roomCode">&mdash;</span>
+      </div>
+      <div class="share-box">
+        <strong>Shareable link</strong>
+        <span id="shareLink">&mdash;</span>
+      </div>
+      <button class="copy-btn" id="copyBtn">Copy Link</button>
+    </div>
+
+    <footer class="foot">Keep this tab open &mdash; it's the only one with auctioneer controls.</footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/host.js"></script>
+</body>
+</html>

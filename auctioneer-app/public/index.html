@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Digital Auctioneer</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="app-header">
+      <h1>🔨 Digital Auctioneer</h1>
+      <p>Run the "going once, going twice, sold!" call for you &mdash; on any device.</p>
+    </header>
+
+    <div class="card">
+      <h2>Start a new auction</h2>
+
+      <label for="itemName">What's being bid on?</label>
+      <input type="text" id="itemName" placeholder="e.g. Autographed baseball" maxlength="120" />
+
+      <label>Seconds between calls</label>
+      <div class="timing-row">
+        <div>
+          <label for="onceDelay">Once</label>
+          <input type="number" id="onceDelay" min="1" max="30" value="3" />
+        </div>
+        <div>
+          <label for="twiceDelay">Twice</label>
+          <input type="number" id="twiceDelay" min="1" max="30" value="3" />
+        </div>
+        <div>
+          <label for="soldDelay">Sold</label>
+          <input type="number" id="soldDelay" min="1" max="30" value="3" />
+        </div>
+      </div>
+
+      <button class="btn-primary" id="createBtn">Start Auction</button>
+      <div class="error" id="createError"></div>
+    </div>
+
+    <div class="divider">or</div>
+
+    <div class="card">
+      <h2>Join an auction</h2>
+      <label for="joinCode">Auction code</label>
+      <input type="text" id="joinCode" placeholder="e.g. K7QX2" maxlength="8" style="text-transform: uppercase;" />
+      <button class="btn-secondary" id="joinBtn" style="margin-top:16px;">Watch &amp; Listen</button>
+      <div class="error" id="joinError"></div>
+    </div>
+
+    <footer class="foot">Standard pacing defaults to 3 seconds between each call, like a real auctioneer &mdash; tweak it above if you want it faster or slower.</footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    const socket = io();
+
+    document.getElementById('createBtn').addEventListener('click', () => {
+      const itemName = document.getElementById('itemName').value.trim();
+      const timing = {
+        onceDelay: Number(document.getElementById('onceDelay').value) || 3,
+        twiceDelay: Number(document.getElementById('twiceDelay').value) || 3,
+        soldDelay: Number(document.getElementById('soldDelay').value) || 3,
+      };
+      const errEl = document.getElementById('createError');
+      errEl.textContent = '';
+
+      socket.emit('host:create', { itemName, timing }, (res) => {
+        if (!res || !res.ok) {
+          errEl.textContent = 'Could not start the auction. Please try again.';
+          return;
+        }
+        sessionStorage.setItem(`auctioneer:${res.roomId}:hostToken`, res.hostToken);
+        window.location.href = `host.html?room=${res.roomId}`;
+      });
+    });
+
+    document.getElementById('joinBtn').addEventListener('click', () => {
+      const code = document.getElementById('joinCode').value.trim().toUpperCase();
+      const errEl = document.getElementById('joinError');
+      errEl.textContent = '';
+      if (!code) {
+        errEl.textContent = 'Enter an auction code first.';
+        return;
+      }
+      window.location.href = `viewer.html?room=${encodeURIComponent(code)}`;
+    });
+
+    document.getElementById('joinCode').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('joinBtn').click();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Digital Auctioneer &mdash; Live</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="app-header">
+      <h1>🔨 Live Auction</h1>
+    </header>
+
+    <div class="card stage">
+      <div class="viewer-badge" id="roomBadge">Connecting...</div>
+      <div class="item-name" id="itemName">Loading...</div>
+      <div class="bid-label" id="bidLabel">&nbsp;</div>
+      <div class="status-display state-idle" id="statusDisplay">Waiting for the auction to start...</div>
+      <div class="bid-count" id="bidCount"></div>
+
+      <button class="mute-btn" id="enableSoundBtn">🔊 Tap to Enable Sound</button>
+      <div class="error" id="viewerError"></div>
+    </div>
+
+    <footer class="foot">You're watching this auction live. The host controls all bids.</footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/viewer.js"></script>
+</body>
+</html>
