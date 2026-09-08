@@ -69,6 +69,7 @@ function createRoom() {
   const room = {
     id,
     hostToken: makeToken(),
+    coHostToken: makeToken(),
     itemName: 'this item',
     timing: { ...DEFAULT_TIMING },
     status: 'idle', // idle | bid_open | going_once | going_twice | sold
@@ -146,19 +147,41 @@ function requireHost(room, token) {
   return room && token && room.hostToken === token;
 }
 
+// Co-auctioneers share a link with a separate token and can register bids
+// (and undo mistakes) alongside the primary host, but can't change item/
+// timing settings or hand out further links.
+function requireBidControl(room, token) {
+  return room && token && (room.hostToken === token || room.coHostToken === token);
+}
+
 io.on('connection', (socket) => {
   socket.on('host:create', (payload, cb) => {
     const room = createRoom();
     room.itemName = sanitizeItemName(payload && payload.itemName);
     room.timing = sanitizeTiming(payload && payload.timing);
     socket.join(room.id);
-    cb && cb({ ok: true, roomId: room.id, hostToken: room.hostToken, state: publicState(room) });
+    cb && cb({
+      ok: true,
+      roomId: room.id,
+      hostToken: room.hostToken,
+      coHostToken: room.coHostToken,
+      state: publicState(room),
+    });
   });
 
   socket.on('host:rejoin', ({ roomId, hostToken } = {}, cb) => {
     const room = rooms.get(roomId);
     if (!requireHost(room, hostToken)) {
       return cb && cb({ ok: false, error: 'Auction not found, or you are not the host on this device.' });
+    }
+    socket.join(room.id);
+    cb && cb({ ok: true, coHostToken: room.coHostToken, state: publicState(room) });
+  });
+
+  socket.on('cohost:join', ({ roomId, coHostToken } = {}, cb) => {
+    const room = rooms.get(roomId);
+    if (!room || !coHostToken || room.coHostToken !== coHostToken) {
+      return cb && cb({ ok: false, error: 'This co-auctioneer link is invalid or the auction has ended.' });
     }
     socket.join(room.id);
     cb && cb({ ok: true, state: publicState(room) });
@@ -182,16 +205,16 @@ io.on('connection', (socket) => {
     cb && cb({ ok: true, state: publicState(room) });
   });
 
-  socket.on('host:newBid', ({ roomId, hostToken, bidLabel } = {}, cb) => {
+  socket.on('host:newBid', ({ roomId, token, hostToken, bidLabel } = {}, cb) => {
     const room = rooms.get(roomId);
-    if (!requireHost(room, hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
+    if (!requireBidControl(room, token || hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
     startBidCycle(room, sanitizeBidLabel(bidLabel));
     cb && cb({ ok: true });
   });
 
-  socket.on('host:cancelBid', ({ roomId, hostToken } = {}, cb) => {
+  socket.on('host:cancelBid', ({ roomId, token, hostToken } = {}, cb) => {
     const room = rooms.get(roomId);
-    if (!requireHost(room, hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
+    if (!requireBidControl(room, token || hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
     clearTimers(room);
     room.status = room.bidCount > 0 ? 'bid_open' : 'idle';
     broadcastState(room);

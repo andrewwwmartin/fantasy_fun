@@ -13,6 +13,11 @@ link so other people can watch and listen live from their own device.
 - **Viewer page** &mdash; a read-only page, reachable via a shareable link
   (with the auction's short code baked in), that mirrors the host's calls in
   real time and speaks them aloud on the viewer's own device too.
+- **Co-auctioneer page** &mdash; a separate shareable link that lets someone
+  else also press **New Bid** and **Undo/Hold** from their own device, so two
+  (or more) people can work the room together. Co-auctioneers can't change
+  the item name/timing settings or see other share links &mdash; that stays
+  with whoever started the auction.
 - Defaults to 3 seconds between each call, a typical real-world auctioneer's
   pace &mdash; adjust it in the settings panel on the host page (or before
   starting the auction) if you want it faster or slower.
@@ -47,7 +52,9 @@ server. To let people outside your own computer/network join:
 
 Once it's reachable, the host page shows the auction code and a ready-to-copy
 link (`.../viewer.html?room=CODE`) &mdash; send that link to anyone you want
-watching along.
+watching along. It also shows a separate **co-auctioneer link**
+(`.../cohost.html?room=CODE&token=...`) &mdash; send that one instead to
+anyone you want to be able to press New Bid alongside you.
 
 ## Notes
 

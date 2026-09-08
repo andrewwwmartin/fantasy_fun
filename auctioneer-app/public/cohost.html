@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Digital Auctioneer &mdash; Co-Auctioneer</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="app-header">
+      <h1>🔨 Co-Auctioneer</h1>
+    </header>
+
+    <div class="card stage">
+      <div class="viewer-badge" id="roomBadge">Connecting...</div>
+      <div class="item-name" id="itemName">Loading...</div>
+      <div class="bid-label" id="bidLabel">&nbsp;</div>
+      <div class="status-display state-idle" id="statusDisplay">Waiting to start</div>
+      <div class="bid-count" id="bidCount"></div>
+
+      <label for="bidLabelInput">Current bid (optional, e.g. "$150")</label>
+      <input type="text" id="bidLabelInput" maxlength="80" placeholder="Leave blank to just say a bid came in" />
+
+      <button class="big-bid-button" id="newBidBtn">🔔 New Bid</button>
+
+      <div class="control-row">
+        <button class="btn-secondary" id="cancelBtn">Undo / Hold</button>
+      </div>
+
+      <button class="mute-btn" id="muteBtn">🔊 Voice On</button>
+      <div class="error" id="cohostError"></div>
+    </div>
+
+    <footer class="foot">You're a co-auctioneer &mdash; you can register bids, but item and timing settings are controlled by the main host.</footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/cohost.js"></script>
+</body>
+</html>

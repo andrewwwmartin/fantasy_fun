@@ -73,6 +73,7 @@
           return;
         }
         sessionStorage.setItem(`auctioneer:${res.roomId}:hostToken`, res.hostToken);
+        sessionStorage.setItem(`auctioneer:${res.roomId}:coHostToken`, res.coHostToken);
         window.location.href = `host.html?room=${res.roomId}`;
       });
     });

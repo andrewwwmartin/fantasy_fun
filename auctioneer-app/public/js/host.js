@@ -34,9 +34,12 @@
     roomCode: document.getElementById('roomCode'),
     shareLink: document.getElementById('shareLink'),
     copyBtn: document.getElementById('copyBtn'),
+    coHostLink: document.getElementById('coHostLink'),
+    copyCoHostBtn: document.getElementById('copyCoHostBtn'),
   };
 
   let lastState = null;
+  let coHostToken = sessionStorage.getItem(`auctioneer:${roomId}:coHostToken`) || '';
 
   function renderState(state) {
     lastState = state;
@@ -58,11 +61,21 @@
   els.roomCode.textContent = roomId;
   els.shareLink.textContent = shareUrlFor(roomId);
 
+  function renderCoHostLink() {
+    els.coHostLink.textContent = coHostToken ? coHostShareUrlFor(roomId, coHostToken) : 'Unavailable';
+  }
+  renderCoHostLink();
+
   socket.on('connect', () => {
     socket.emit('host:rejoin', { roomId, hostToken }, (res) => {
       if (!res || !res.ok) {
         hostError.textContent = (res && res.error) || 'Could not reconnect as host.';
         return;
+      }
+      if (res.coHostToken) {
+        coHostToken = res.coHostToken;
+        sessionStorage.setItem(`auctioneer:${roomId}:coHostToken`, coHostToken);
+        renderCoHostLink();
       }
       renderState(res.state);
     });
@@ -131,6 +144,18 @@
       setTimeout(() => { els.copyBtn.textContent = 'Copy Link'; }, 1500);
     } catch (e) {
       els.shareLink.textContent = link;
+    }
+  });
+
+  els.copyCoHostBtn.addEventListener('click', async () => {
+    if (!coHostToken) return;
+    const link = coHostShareUrlFor(roomId, coHostToken);
+    try {
+      await navigator.clipboard.writeText(link);
+      els.copyCoHostBtn.textContent = 'Copied!';
+      setTimeout(() => { els.copyCoHostBtn.textContent = 'Copy Co-Auctioneer Link'; }, 1500);
+    } catch (e) {
+      els.coHostLink.textContent = link;
     }
   });
 
