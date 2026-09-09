@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const crypto = require('crypto');
 const express = require('express');
 const http = require('http');
@@ -31,6 +32,44 @@ const MAX_DELAY = 30;
 
 /** @type {Map<string, Room>} */
 const rooms = new Map();
+
+// Lightweight persistence: rooms are written to a local JSON file on every
+// change and reloaded at boot, so a process crash/restart resumes the
+// current auction(s) instead of losing them. This only survives a restart
+// of the same running instance — most hosting platforms don't guarantee a
+// fresh deploy's container reuses the previous one's local disk, so a new
+// deploy still starts clean. `timers` are runtime-only and never persisted;
+// they're rebuilt by resumeRoom() after loading.
+const DATA_DIR = path.join(__dirname, '..', 'data');
+const DATA_FILE = path.join(DATA_DIR, 'rooms.json');
+
+function persistRooms() {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    const serializable = Array.from(rooms.values()).map(({ timers, ...rest }) => rest);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(serializable));
+  } catch (e) {
+    console.error('Failed to persist auction state:', e.message);
+  }
+}
+
+function loadRooms() {
+  let saved;
+  try {
+    saved = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+  } catch (e) {
+    return; // no persisted state yet, or it's unreadable — start fresh
+  }
+  for (const roomData of saved) {
+    const room = { ...roomData, timers: [] };
+    rooms.set(room.id, room);
+    resumeRoom(room);
+  }
+  if (saved.length) {
+    console.log(`Restored ${saved.length} auction(s) from disk.`);
+    persistRooms(); // write back any statuses resumeRoom fast-forwarded
+  }
+}
 
 function makeRoomId() {
   // Short, easy to read aloud / type, low collision risk for this use case.
@@ -80,6 +119,11 @@ function createRoom() {
     timing: { ...DEFAULT_TIMING },
     status: 'idle', // idle | bid_open | going_once | going_twice | sold
     statusStartedAt: Date.now(),
+    // Whether the current status is genuinely counting down toward the next
+    // call (true during a live bid cycle) versus held indefinitely (after
+    // Undo/Hold, or idle) — resumeRoom() must not fast-forward a held room
+    // after a restart just because time has passed while it sat waiting.
+    autoAdvance: false,
     bidCount: 0,
     currentBidLabel: '',
     timers: [],
@@ -134,48 +178,94 @@ function publicState(room) {
 
 function broadcastState(room) {
   io.to(room.id).emit('state', publicState(room));
+  persistRooms();
 }
 
 function announce(room, type, text) {
   io.to(room.id).emit('announce', { type, text });
 }
 
+// The call sequence a bid moves through. 'idle' isn't part of it — it's the
+// resting state before any bid, or after Next Item.
+const CALL_SEQUENCE = ['bid_open', 'going_once', 'going_twice', 'sold'];
+
+function nextStatus(status) {
+  const idx = CALL_SEQUENCE.indexOf(status);
+  return idx >= 0 && idx < CALL_SEQUENCE.length - 1 ? CALL_SEQUENCE[idx + 1] : null;
+}
+
+function announceForStatus(room) {
+  const bidLabel = room.currentBidLabel;
+  switch (room.status) {
+    case 'bid_open':
+      announce(room, 'bid', bidLabel ? `New bid: ${bidLabel} for ${room.itemName}.` : `New bid on ${room.itemName}.`);
+      break;
+    case 'going_once':
+      announce(room, 'going_once', 'Going once...');
+      break;
+    case 'going_twice':
+      announce(room, 'going_twice', 'Going twice...');
+      break;
+    case 'sold':
+      announce(room, 'sold', bidLabel ? `Sold! ${bidLabel}, for ${room.itemName}.` : `Sold! ${room.itemName}.`);
+      break;
+  }
+}
+
+// Schedules the timer that advances the room from its current status to the
+// next one in CALL_SEQUENCE, honoring any time already elapsed since
+// statusStartedAt. In normal live use elapsed is ~0; on server restart it can
+// be large, which just makes the transition fire sooner (see resumeRoom).
+function scheduleAdvance(room) {
+  const next = nextStatus(room.status);
+  if (!next) return; // sold or idle: nothing further to schedule
+  const remaining = Math.max(0, durationForStatus(room) - (Date.now() - room.statusStartedAt));
+  const timer = setTimeout(() => {
+    setStatus(room, next);
+    broadcastState(room);
+    announceForStatus(room);
+    scheduleAdvance(room);
+  }, remaining);
+  room.timers.push(timer);
+}
+
 function startBidCycle(room, bidLabel) {
   clearTimers(room);
   room.bidCount += 1;
   room.currentBidLabel = bidLabel;
+  room.autoAdvance = true;
   setStatus(room, 'bid_open');
   broadcastState(room);
+  announceForStatus(room);
+  scheduleAdvance(room);
+}
 
-  const bidText = bidLabel
-    ? `New bid: ${bidLabel} for ${room.itemName}.`
-    : `New bid on ${room.itemName}.`;
-  announce(room, 'bid', bidText);
-
-  const t1 = setTimeout(() => {
-    setStatus(room, 'going_once');
-    broadcastState(room);
-    announce(room, 'going_once', 'Going once...');
-
-    const t2 = setTimeout(() => {
-      setStatus(room, 'going_twice');
-      broadcastState(room);
-      announce(room, 'going_twice', 'Going twice...');
-
-      const t3 = setTimeout(() => {
-        setStatus(room, 'sold');
-        broadcastState(room);
-        const soldText = bidLabel
-          ? `Sold! ${bidLabel}, for ${room.itemName}.`
-          : `Sold! ${room.itemName}.`;
-        announce(room, 'sold', soldText);
-        room.timers = [];
-      }, room.timing.soldDelay * 1000);
-      room.timers.push(t3);
-    }, room.timing.twiceDelay * 1000);
-    room.timers.push(t2);
-  }, room.timing.onceDelay * 1000);
-  room.timers.push(t1);
+// Called once per restored room at server boot. Fast-forwards synchronously
+// through any stages that would have completed entirely during the downtime
+// (so a long outage lands straight on 'sold' rather than rapid-firing every
+// intermediate call), then hands off to the normal live timer chain for
+// whatever genuinely remains.
+function resumeRoom(room) {
+  if (!room.autoAdvance) return; // held (Undo/Hold) or idle: leave it exactly as it was
+  if (!CALL_SEQUENCE.includes(room.status) || room.status === 'sold') return;
+  let elapsed = Date.now() - room.statusStartedAt;
+  let status = room.status;
+  while (true) {
+    const duration = durationForStatus({ ...room, status });
+    if (elapsed < duration) break;
+    elapsed -= duration;
+    const next = nextStatus(status);
+    if (!next) break;
+    status = next;
+    if (status === 'sold') break;
+  }
+  setStatus(room, status);
+  room.statusStartedAt = Date.now() - elapsed;
+  if (status === 'sold') {
+    announceForStatus(room);
+  } else {
+    scheduleAdvance(room);
+  }
 }
 
 function requireHost(room, token) {
@@ -251,6 +341,7 @@ io.on('connection', (socket) => {
     const room = rooms.get(roomId);
     if (!requireBidControl(room, token || hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
     clearTimers(room);
+    room.autoAdvance = false;
     setStatus(room, room.bidCount > 0 ? 'bid_open' : 'idle');
     broadcastState(room);
     announce(room, 'cancel', 'Hold on...');
@@ -261,6 +352,7 @@ io.on('connection', (socket) => {
     const room = rooms.get(roomId);
     if (!requireBidControl(room, token || hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
     clearTimers(room);
+    room.autoAdvance = false;
     setStatus(room, 'idle');
     room.bidCount = 0;
     room.currentBidLabel = '';
@@ -270,8 +362,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Rooms are held in memory only and cleaned up after a period of inactivity
-// is implied by process lifetime; this app is intentionally simple/ephemeral.
+loadRooms();
 
 server.listen(PORT, () => {
   console.log(`Auctioneer app listening on http://localhost:${PORT}`);

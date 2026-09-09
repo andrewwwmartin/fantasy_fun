@@ -60,13 +60,26 @@ watching along. It also shows a separate **co-auctioneer link**
 (`.../cohost.html?room=CODE&token=...`) &mdash; send that one instead to
 anyone you want to be able to press New Bid alongside you &mdash; and a
 **display link** (`.../display.html?room=CODE`) to put up on a TV or
-projector for the room to watch.
+projector for the room to watch. Each link also has a QR code underneath it
+on the host page, so people at an in-person event can just scan it with
+their phone camera instead of typing anything.
 
 ## Notes
 
-- Auction state lives in memory on the server, so it resets if the server
-  restarts. This is intentionally simple &mdash; it's meant for running live
-  auctions, not storing history.
+- Auction state is kept in memory and also written to `data/rooms.json` on
+  every change, so a server **crash or process restart** resumes the
+  in-progress auction(s) instead of losing them &mdash; any stage that
+  would've finished entirely during the downtime is fast-forwarded through
+  (landing straight on "Sold" for a long outage) rather than replaying every
+  intermediate call late. This does **not** protect against a fresh
+  **deploy**: most hosting platforms (Render included, without a paid disk
+  add-on) start a new deploy from a clean container, so pushing new code
+  still resets any auction in progress. It's meant for running live
+  auctions, not storing permanent history.
+- Press **Space** (or tap the button) to register a new bid on the host or
+  co-auctioneer page &mdash; handy if you're running the auction from a
+  laptop. It's ignored while typing in a text field, so it won't interfere
+  with entering an item name or bid amount.
 - Speech synthesis requires a user tap/click first on most browsers (this is
   a browser autoplay restriction, not a bug) &mdash; the viewer page has a
   "Tap to Enable Sound" button for this reason.

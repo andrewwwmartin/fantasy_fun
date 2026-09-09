@@ -29,6 +29,7 @@
       </div>
 
       <button class="big-bid-button" id="newBidBtn">🔔 New Bid</button>
+      <p class="hint" style="margin-top:8px;">Tip: press <strong>Space</strong> to bid too</p>
 
       <div class="control-row">
         <button class="btn-secondary" id="cancelBtn">Undo / Hold</button>
@@ -76,6 +77,7 @@
         <strong>Shareable link (watch &amp; listen only)</strong>
         <span id="shareLink">&mdash;</span>
       </div>
+      <div class="qr-code" id="shareQr"></div>
       <button class="copy-btn" id="copyBtn">Copy Link</button>
     </div>
 
@@ -86,6 +88,7 @@
         <strong>Display link</strong>
         <span id="displayLink">&mdash;</span>
       </div>
+      <div class="qr-code" id="displayQr"></div>
       <button class="copy-btn" id="copyDisplayBtn">Copy Display Link</button>
     </div>
 
@@ -96,6 +99,7 @@
         <strong>Co-auctioneer link</strong>
         <span id="coHostLink">&mdash;</span>
       </div>
+      <div class="qr-code" id="coHostQr"></div>
       <button class="copy-btn" id="copyCoHostBtn">Copy Co-Auctioneer Link</button>
     </div>
 
@@ -103,6 +107,7 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="js/vendor/qrcode.min.js"></script>
   <script src="js/common.js"></script>
   <script src="js/host.js"></script>
 </body>

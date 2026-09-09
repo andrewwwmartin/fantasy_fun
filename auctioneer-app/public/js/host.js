@@ -62,10 +62,14 @@
 
   els.roomCode.textContent = roomId;
   els.shareLink.textContent = shareUrlFor(roomId);
+  renderQr('shareQr', shareUrlFor(roomId));
   els.displayLink.textContent = displayShareUrlFor(roomId);
+  renderQr('displayQr', displayShareUrlFor(roomId));
 
   function renderCoHostLink() {
-    els.coHostLink.textContent = coHostToken ? coHostShareUrlFor(roomId, coHostToken) : 'Unavailable';
+    const link = coHostToken ? coHostShareUrlFor(roomId, coHostToken) : '';
+    els.coHostLink.textContent = link || 'Unavailable';
+    renderQr('coHostQr', link);
   }
   renderCoHostLink();
 
@@ -211,4 +215,6 @@
   document.body.addEventListener('click', () => {
     Speech.unlock();
   }, { once: true });
+
+  bindSpacebarShortcut(els.newBidBtn);
 })();

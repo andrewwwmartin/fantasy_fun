@@ -403,6 +403,22 @@ button {
   font-weight: 600;
 }
 
+.qr-code {
+  display: flex;
+  justify-content: center;
+  background: #fff;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+}
+
+.qr-code img,
+.qr-code canvas {
+  display: block;
+  width: 128px;
+  height: 128px;
+}
+
 .copy-btn {
   margin-top: 10px;
   padding: 11px;

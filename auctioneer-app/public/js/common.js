@@ -170,6 +170,39 @@ function stepBidInput(inputEl, delta, fallbackAmount) {
   inputEl.value = formatBidAmount(next);
 }
 
+// Renders (or replaces) a QR code for `text` into the element with the
+// given id, using the vendored qrcodejs library. Passing an empty text
+// clears the container instead.
+function renderQr(containerId, text) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  if (!text || typeof QRCode === 'undefined') return;
+  new QRCode(el, {
+    text,
+    width: 128,
+    height: 128,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M,
+  });
+}
+
+// Lets the spacebar trigger a button (defaults to New Bid) from anywhere on
+// the page, except while focus is on a form field or another button — where
+// space should do its normal job (type a space, activate the focused
+// control) instead of also firing this shortcut.
+function bindSpacebarShortcut(buttonEl) {
+  document.addEventListener('keydown', (e) => {
+    if (e.code !== 'Space' && e.key !== ' ') return;
+    const tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+    if (buttonEl.disabled) return;
+    e.preventDefault();
+    buttonEl.click();
+  });
+}
+
 function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
 }

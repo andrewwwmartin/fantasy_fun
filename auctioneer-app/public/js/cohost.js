@@ -151,4 +151,6 @@
   document.body.addEventListener('click', () => {
     Speech.unlock();
   }, { once: true });
+
+  bindSpacebarShortcut(els.newBidBtn);
 })();
