@@ -23,7 +23,11 @@
       <div class="bid-count" id="bidCount"></div>
 
       <label for="bidLabelInput">Current bid (optional, e.g. "$150")</label>
-      <input type="text" id="bidLabelInput" maxlength="80" placeholder="Leave blank to just say a bid came in" />
+      <div class="bid-stepper">
+        <button class="stepper-btn" id="bidDecBtn" type="button" aria-label="Decrease bid">&minus;</button>
+        <input type="text" id="bidLabelInput" maxlength="80" placeholder="Leave blank to just say a bid came in" />
+        <button class="stepper-btn" id="bidIncBtn" type="button" aria-label="Increase bid">+</button>
+      </div>
 
       <button class="big-bid-button" id="newBidBtn">🔔 New Bid</button>
 

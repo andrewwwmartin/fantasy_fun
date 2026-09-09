@@ -146,6 +146,30 @@ function buzz(pattern = 30) {
   }
 }
 
+const BID_STEP = 1;
+
+function parseBidAmount(str) {
+  if (!str) return null;
+  const match = String(str).replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+  return match ? parseFloat(match[0]) : null;
+}
+
+function formatBidAmount(amount) {
+  const rounded = Math.round(amount * 100) / 100;
+  const clean = Number.isInteger(rounded) ? rounded : rounded.toFixed(2);
+  return `$${clean}`;
+}
+
+// Bumps the amount in a bid input up/down by BID_STEP. If the field is
+// empty, starts from the last known bid on the room (so "+" after a bid
+// was just placed naturally suggests the next increment) rather than 0.
+function stepBidInput(inputEl, delta, fallbackAmount) {
+  const current = parseBidAmount(inputEl.value);
+  const base = current !== null ? current : (parseBidAmount(fallbackAmount) || 0);
+  const next = Math.max(0, base + delta);
+  inputEl.value = formatBidAmount(next);
+}
+
 function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
 }

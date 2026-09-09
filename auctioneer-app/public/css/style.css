@@ -149,6 +149,37 @@ input:focus {
   text-align: center;
 }
 
+.bid-stepper {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.bid-stepper input {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.stepper-btn {
+  flex: 0 0 auto;
+  width: 52px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--panel-solid);
+  color: var(--text);
+  border: 2px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  line-height: 1;
+}
+
+.stepper-btn:hover { filter: brightness(1.15); }
+
+.stepper-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.35);
+}
+
 button {
   font-family: var(--font-display);
   cursor: pointer;

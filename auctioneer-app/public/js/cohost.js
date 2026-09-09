@@ -17,6 +17,8 @@
     statusDisplay: document.getElementById('statusDisplay'),
     bidCount: document.getElementById('bidCount'),
     bidLabelInput: document.getElementById('bidLabelInput'),
+    bidDecBtn: document.getElementById('bidDecBtn'),
+    bidIncBtn: document.getElementById('bidIncBtn'),
     newBidBtn: document.getElementById('newBidBtn'),
     cancelBtn: document.getElementById('cancelBtn'),
     nextItemBtn: document.getElementById('nextItemBtn'),
@@ -75,6 +77,14 @@
 
   els.cancelBtn.addEventListener('click', () => {
     socket.emit('host:cancelBid', { roomId, token: coHostToken });
+  });
+
+  els.bidDecBtn.addEventListener('click', () => {
+    stepBidInput(els.bidLabelInput, -BID_STEP, lastState && lastState.currentBidLabel);
+  });
+
+  els.bidIncBtn.addEventListener('click', () => {
+    stepBidInput(els.bidLabelInput, BID_STEP, lastState && lastState.currentBidLabel);
   });
 
   els.nextItemBtn.addEventListener('click', () => {

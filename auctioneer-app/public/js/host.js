@@ -24,6 +24,8 @@
     settingsPanel: document.getElementById('settingsPanel'),
     itemNameInput: document.getElementById('itemNameInput'),
     bidLabelInput: document.getElementById('bidLabelInput'),
+    bidDecBtn: document.getElementById('bidDecBtn'),
+    bidIncBtn: document.getElementById('bidIncBtn'),
     onceDelay: document.getElementById('onceDelay'),
     twiceDelay: document.getElementById('twiceDelay'),
     soldDelay: document.getElementById('soldDelay'),
@@ -116,6 +118,14 @@
 
   els.cancelBtn.addEventListener('click', () => {
     socket.emit('host:cancelBid', { roomId, hostToken });
+  });
+
+  els.bidDecBtn.addEventListener('click', () => {
+    stepBidInput(els.bidLabelInput, -BID_STEP, lastState && lastState.currentBidLabel);
+  });
+
+  els.bidIncBtn.addEventListener('click', () => {
+    stepBidInput(els.bidLabelInput, BID_STEP, lastState && lastState.currentBidLabel);
   });
 
   els.nextItemBtn.addEventListener('click', () => {
