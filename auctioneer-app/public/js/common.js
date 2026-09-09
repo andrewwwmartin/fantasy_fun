@@ -207,21 +207,16 @@ function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
 }
 
+// Short paths (the server redirects these to the real pages) so someone
+// typing a link on a desktop isn't stuck with a long ?room=...&token=... URL.
 function shareUrlFor(roomId) {
-  const url = new URL('viewer.html', window.location.href);
-  url.searchParams.set('room', roomId);
-  return url.toString();
+  return new URL(`v/${roomId}`, window.location.href).toString();
 }
 
 function displayShareUrlFor(roomId) {
-  const url = new URL('display.html', window.location.href);
-  url.searchParams.set('room', roomId);
-  return url.toString();
+  return new URL(`d/${roomId}`, window.location.href).toString();
 }
 
 function coHostShareUrlFor(roomId, coHostToken) {
-  const url = new URL('cohost.html', window.location.href);
-  url.searchParams.set('room', roomId);
-  url.searchParams.set('token', coHostToken);
-  return url.toString();
+  return new URL(`c/${roomId}/${coHostToken}`, window.location.href).toString();
 }

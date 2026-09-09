@@ -19,6 +19,23 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
   setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache'),
 }));
 
+// Short, typable links for the share pages — /viewer.html?room=CODE and
+// friends still work directly, but these are what's shown/copied on the
+// host page so someone at a desktop isn't stuck typing a long URL.
+// Uppercased defensively since every code/token here is generated
+// uppercase-only, in case someone hand-types it in lowercase.
+app.get('/v/:code', (req, res) => {
+  res.redirect(`/viewer.html?room=${encodeURIComponent(req.params.code.toUpperCase())}`);
+});
+app.get('/d/:code', (req, res) => {
+  res.redirect(`/display.html?room=${encodeURIComponent(req.params.code.toUpperCase())}`);
+});
+app.get('/c/:code/:token', (req, res) => {
+  const room = encodeURIComponent(req.params.code.toUpperCase());
+  const token = encodeURIComponent(req.params.token.toUpperCase());
+  res.redirect(`/cohost.html?room=${room}&token=${token}`);
+});
+
 // Standard real-world auctioneer pacing: a few seconds between each call
 // gives the room a chance to jump back in with a counter-bid.
 const DEFAULT_TIMING = {
@@ -71,18 +88,35 @@ function loadRooms() {
   }
 }
 
+// No 0/O/1/I — easy to read aloud, type, or tell apart at a glance.
+const FRIENDLY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function randomCode(length) {
+  return Array.from({ length }, () => FRIENDLY_ALPHABET[crypto.randomInt(FRIENDLY_ALPHABET.length)]).join('');
+}
+
 function makeRoomId() {
   // Short, easy to read aloud / type, low collision risk for this use case.
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
   let id;
   do {
-    id = Array.from({ length: 5 }, () => alphabet[crypto.randomInt(alphabet.length)]).join('');
+    id = randomCode(5);
   } while (rooms.has(id));
   return id;
 }
 
 function makeToken() {
   return crypto.randomBytes(24).toString('hex');
+}
+
+// The co-auctioneer link is meant to be shared and sometimes typed by hand,
+// so its token trades some cryptographic strength for length: 8 characters
+// from a 32-symbol alphabet is ~1 trillion possibilities, effectively
+// unguessable for a short-lived live auction with no automated attacker,
+// while still being short enough to type. The host's own token never
+// appears in a link a human types (it's stored automatically), so it stays
+// long and fully random.
+function makeCoHostToken() {
+  return randomCode(8);
 }
 
 function sanitizeTiming(timing = {}) {
@@ -114,7 +148,7 @@ function createRoom() {
   const room = {
     id,
     hostToken: makeToken(),
-    coHostToken: makeToken(),
+    coHostToken: makeCoHostToken(),
     itemName: 'this item',
     timing: { ...DEFAULT_TIMING },
     status: 'idle', // idle | bid_open | going_once | going_twice | sold

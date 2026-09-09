@@ -52,16 +52,19 @@ server. To let people outside your own computer/network join:
    `3000`).
 2. **Or, for a quick one-off auction**, run it locally and expose it with a
    tunnel tool like `ngrok` (`ngrok http 3000`), then share the ngrok URL's
-   `/viewer.html?room=CODE` link.
+   `/v/CODE` link.
 
 Once it's reachable, the host page shows the auction code and a ready-to-copy
-link (`.../viewer.html?room=CODE`) &mdash; send that link to anyone you want
-watching along. It also shows a separate **co-auctioneer link**
-(`.../cohost.html?room=CODE&token=...`) &mdash; send that one instead to
-anyone you want to be able to press New Bid alongside you &mdash; and a
-**display link** (`.../display.html?room=CODE`) to put up on a TV or
-projector for the room to watch. Each link also has a QR code underneath it
-on the host page, so people at an in-person event can just scan it with
+link (`.../v/CODE`) &mdash; send that link to anyone you want watching along.
+It also shows a separate **co-auctioneer link** (`.../c/CODE/TOKEN`) &mdash;
+send that one instead to anyone you want to be able to press New Bid
+alongside you &mdash; and a **display link** (`.../d/CODE`) to put up on a TV
+or projector for the room to watch. These short forms (`/v/`, `/d/`, `/c/`)
+are what's shown and copied on the host page, kept short on purpose so
+they're easy to read out or type by hand on a desktop; the longer
+`/viewer.html?room=CODE`-style URLs still work too, they're just not what
+gets shared. Each link also has a QR code underneath it on the host page, so
+people at an in-person event can just scan it with
 their phone camera instead of typing anything.
 
 ## Notes
@@ -80,6 +83,12 @@ their phone camera instead of typing anything.
   co-auctioneer page &mdash; handy if you're running the auction from a
   laptop. It's ignored while typing in a text field, so it won't interfere
   with entering an item name or bid amount.
+- The co-auctioneer link's token is a short 8-character code rather than a
+  long cryptographic one, trading some strength for being typable by hand.
+  It's still on the order of a trillion possibilities &mdash; effectively
+  unguessable for the lifetime of a live auction with no automated attacker
+  &mdash; but is a deliberately weaker guarantee than the host's own access,
+  which never needs to be typed and stays long and fully random.
 - Speech synthesis requires a user tap/click first on most browsers (this is
   a browser autoplay restriction, not a bug) &mdash; the viewer page has a
   "Tap to Enable Sound" button for this reason.
