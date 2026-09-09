@@ -1,16 +1,17 @@
 :root {
   color-scheme: dark;
 
-  /* A dark-mode take on 49ers red & gold — background kept close to neutral
-     charcoal (rather than a warm brown) so the red and gold actually read as
-     red and gold instead of blending into the backdrop; the red itself is a
-     true, fairly saturated cardinal rather than a muddy brick tone. */
-  --bg-1: #121013;
-  --bg-2: #1c1418;
-  --panel: rgba(255, 245, 238, 0.05);
-  --panel-border: rgba(255, 225, 205, 0.09);
-  --panel-solid: #271a1c;
-  --field: #201519;
+  /* A dark-mode take on 49ers red & gold. Solid UI surfaces (cards, inputs,
+     buttons) are neutral charcoal, not brand-tinted — that's what was
+     reading as "brown" — so red and gold only show up as deliberate accents
+     (buttons, borders, status states, ambient glow) rather than muddying
+     every surface. */
+  --bg-1: #0f0e10;
+  --bg-2: #17141a;
+  --panel: rgba(255, 255, 255, 0.05);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --panel-solid: #201d20;
+  --field: #1b181b;
   --text: #f7f2ec;
   --muted: #a99ba0;
 
@@ -47,8 +48,9 @@ body {
   font-family: var(--font-body);
   color: var(--text);
   background:
-    radial-gradient(circle at 15% 0%, rgba(211, 58, 63, 0.22), transparent 45%),
-    radial-gradient(circle at 85% 15%, rgba(201, 169, 97, 0.14), transparent 40%),
+    radial-gradient(circle at 15% 0%, rgba(211, 58, 63, 0.28), transparent 65%),
+    radial-gradient(circle at 100% 100%, rgba(211, 58, 63, 0.2), transparent 65%),
+    radial-gradient(circle at 85% 20%, rgba(201, 169, 97, 0.14), transparent 55%),
     linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 55%);
   background-attachment: fixed;
   display: flex;
