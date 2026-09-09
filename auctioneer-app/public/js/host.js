@@ -95,6 +95,7 @@
 
   els.newBidBtn.addEventListener('click', () => {
     Speech.unlock();
+    buzz();
     const bidLabel = els.bidLabelInput.value.trim();
     socket.emit('host:newBid', { roomId, hostToken, bidLabel }, (res) => {
       if (!res || !res.ok) hostError.textContent = (res && res.error) || 'Could not register the bid.';

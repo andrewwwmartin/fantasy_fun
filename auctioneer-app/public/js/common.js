@@ -119,17 +119,26 @@ function announcementVoiceSettings(type) {
 function statusLabel(status) {
   switch (status) {
     case 'idle':
-      return 'Waiting for the auction to start...';
+      return 'Waiting to start...';
     case 'bid_open':
-      return 'Bid received';
+      return '🔔 Bid received!';
     case 'going_once':
       return 'Going once...';
     case 'going_twice':
       return 'Going twice...';
     case 'sold':
-      return 'SOLD!';
+      return '🎉 SOLD! 🎉';
     default:
       return '';
+  }
+}
+
+// A short buzz on supported devices (mainly Android) makes the bid button
+// feel more like a physical buzzer. iOS Safari doesn't support this API, so
+// it's a no-op there.
+function buzz(pattern = 30) {
+  if ('vibrate' in navigator) {
+    try { navigator.vibrate(pattern); } catch (e) { /* ignore */ }
   }
 }
 
