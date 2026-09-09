@@ -7,10 +7,7 @@
     return;
   }
 
-  const hostToken = sessionStorage.getItem(`auctioneer:${roomId}:hostToken`);
-  if (!hostToken) {
-    hostError.textContent = 'No host access found for this auction on this device/tab.';
-  }
+  const hostToken = localStorage.getItem(`auctioneer:${roomId}:hostToken`);
 
   const socket = io();
 
@@ -36,10 +33,11 @@
     copyBtn: document.getElementById('copyBtn'),
     coHostLink: document.getElementById('coHostLink'),
     copyCoHostBtn: document.getElementById('copyCoHostBtn'),
+    testVoiceBtn: document.getElementById('testVoiceBtn'),
   };
 
   let lastState = null;
-  let coHostToken = sessionStorage.getItem(`auctioneer:${roomId}:coHostToken`) || '';
+  let coHostToken = localStorage.getItem(`auctioneer:${roomId}:coHostToken`) || '';
 
   function renderState(state) {
     lastState = state;
@@ -66,15 +64,25 @@
   }
   renderCoHostLink();
 
+  function lockOutHost(message) {
+    els.newBidBtn.disabled = true;
+    els.newBidBtn.textContent = '⚠️ Not connected as host';
+    els.cancelBtn.disabled = true;
+    els.nextItemBtn.disabled = true;
+    els.statusDisplay.textContent = message;
+    els.statusDisplay.className = 'status-display state-idle';
+    hostError.textContent = `${message} Go back and start a new auction from the home page.`;
+  }
+
   socket.on('connect', () => {
     socket.emit('host:rejoin', { roomId, hostToken }, (res) => {
       if (!res || !res.ok) {
-        hostError.textContent = (res && res.error) || 'Could not reconnect as host.';
+        lockOutHost((res && res.error) || 'Lost host access to this auction.');
         return;
       }
       if (res.coHostToken) {
         coHostToken = res.coHostToken;
-        sessionStorage.setItem(`auctioneer:${roomId}:coHostToken`, coHostToken);
+        localStorage.setItem(`auctioneer:${roomId}:coHostToken`, coHostToken);
         renderCoHostLink();
       }
       renderState(res.state);
@@ -140,6 +148,15 @@
     Speech.setMuted(nowMuted);
     els.muteBtn.textContent = nowMuted ? '🔇 Voice Off' : '🔊 Voice On';
     els.muteBtn.classList.toggle('muted', nowMuted);
+  });
+
+  els.testVoiceBtn.addEventListener('click', () => {
+    if (!Speech.isSupported()) {
+      hostError.textContent = 'This browser does not support text-to-speech at all — try Chrome or Safari.';
+      return;
+    }
+    hostError.textContent = '';
+    Speech.speak('This is a test of the auctioneer voice. If you can hear this, the voice works on this device.');
   });
 
   els.copyBtn.addEventListener('click', async () => {

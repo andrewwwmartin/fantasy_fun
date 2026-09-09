@@ -55,6 +55,10 @@ const Speech = (() => {
 
   function speak(text, { rate = 1, pitch = 1 } = {}) {
     if (muted || !text || !('speechSynthesis' in window)) return;
+    // Some browsers (iOS Safari especially, after the tab backgrounds even
+    // briefly) can leave the speech queue in a paused/stuck state; resuming
+    // before every utterance is a cheap, harmless guard against that.
+    try { window.speechSynthesis.resume(); } catch (e) { /* ignore */ }
     const utter = new SpeechSynthesisUtterance(text);
     if (voice) utter.voice = voice;
     utter.rate = rate;

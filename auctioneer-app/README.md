@@ -14,10 +14,10 @@ link so other people can watch and listen live from their own device.
   (with the auction's short code baked in), that mirrors the host's calls in
   real time and speaks them aloud on the viewer's own device too.
 - **Co-auctioneer page** &mdash; a separate shareable link that lets someone
-  else also press **New Bid** and **Undo/Hold** from their own device, so two
-  (or more) people can work the room together. Co-auctioneers can't change
-  the item name/timing settings or see other share links &mdash; that stays
-  with whoever started the auction.
+  else also press **New Bid**, **Undo/Hold**, and **Next Item** from their own
+  device, so two (or more) people can work the room together. Co-auctioneers
+  can't change the auction's timing settings or see other share links &mdash;
+  that stays with whoever started the auction.
 - Defaults to 3 seconds between each call, a typical real-world auctioneer's
   pace &mdash; adjust it in the settings panel on the host page (or before
   starting the auction) if you want it faster or slower.
@@ -68,3 +68,11 @@ anyone you want to be able to press New Bid alongside you.
   hit the button by mistake) without ending the auction.
 - "Next Item" resets the bid counter and lets you rename the item for a new
   round, on the same shared link.
+- The host and co-auctioneer pages both have a "Test Voice" button that
+  speaks a fixed test phrase immediately on tap &mdash; useful for checking
+  whether voice works at all on a given phone (ringer/silent switch, volume,
+  browser support) separately from whether the timed announcements play.
+- The host's access to an auction is tied to a token saved in the browser's
+  `localStorage` when the auction is created. If a host page ever shows
+  "Lost host access to this auction," that browser lost track of the token
+  (e.g. site data was cleared) &mdash; start a new auction from the home page.

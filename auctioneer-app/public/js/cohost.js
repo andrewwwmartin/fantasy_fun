@@ -19,10 +19,15 @@
     bidLabelInput: document.getElementById('bidLabelInput'),
     newBidBtn: document.getElementById('newBidBtn'),
     cancelBtn: document.getElementById('cancelBtn'),
+    nextItemBtn: document.getElementById('nextItemBtn'),
     muteBtn: document.getElementById('muteBtn'),
+    testVoiceBtn: document.getElementById('testVoiceBtn'),
   };
 
+  let lastState = null;
+
   function renderState(state) {
+    lastState = state;
     els.itemName.textContent = state.itemName;
     els.bidLabel.textContent = state.currentBidLabel ? `Current: ${state.currentBidLabel}` : ' ';
     els.statusDisplay.textContent = statusLabel(state.status);
@@ -72,11 +77,30 @@
     socket.emit('host:cancelBid', { roomId, token: coHostToken });
   });
 
+  els.nextItemBtn.addEventListener('click', () => {
+    const nextName = prompt('Name of the next item?', lastState ? lastState.itemName : '');
+    if (nextName === null) return;
+    els.bidLabelInput.value = '';
+    socket.emit('host:nextItem', { roomId, token: coHostToken, itemName: nextName }, (res) => {
+      if (res && res.ok) renderState(res.state);
+      else cohostError.textContent = (res && res.error) || 'Could not move to the next item.';
+    });
+  });
+
   els.muteBtn.addEventListener('click', () => {
     const nowMuted = !Speech.muted;
     Speech.setMuted(nowMuted);
     els.muteBtn.textContent = nowMuted ? '🔇 Voice Off' : '🔊 Voice On';
     els.muteBtn.classList.toggle('muted', nowMuted);
+  });
+
+  els.testVoiceBtn.addEventListener('click', () => {
+    if (!Speech.isSupported()) {
+      cohostError.textContent = 'This browser does not support text-to-speech at all — try Chrome or Safari.';
+      return;
+    }
+    cohostError.textContent = '';
+    Speech.speak('This is a test of the auctioneer voice. If you can hear this, the voice works on this device.');
   });
 
   // Unlock speech synthesis on the very first tap anywhere on the page, so

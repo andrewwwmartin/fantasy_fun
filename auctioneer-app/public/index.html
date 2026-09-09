@@ -75,8 +75,11 @@
           errEl.textContent = 'Could not start the auction. Please try again.';
           return;
         }
-        sessionStorage.setItem(`auctioneer:${res.roomId}:hostToken`, res.hostToken);
-        sessionStorage.setItem(`auctioneer:${res.roomId}:coHostToken`, res.coHostToken);
+        // localStorage rather than sessionStorage: iOS Safari can silently
+        // evict sessionStorage when it reclaims memory from a backgrounded
+        // tab, which would otherwise strand the host mid-auction.
+        localStorage.setItem(`auctioneer:${res.roomId}:hostToken`, res.hostToken);
+        localStorage.setItem(`auctioneer:${res.roomId}:coHostToken`, res.coHostToken);
         window.location.href = `host.html?room=${res.roomId}`;
       });
     });

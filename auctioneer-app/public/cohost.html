@@ -29,13 +29,15 @@
 
       <div class="control-row">
         <button class="btn-secondary" id="cancelBtn">Undo / Hold</button>
+        <button class="btn-secondary" id="nextItemBtn">Next Item</button>
       </div>
 
       <button class="mute-btn" id="muteBtn">🔊 Voice On</button>
+      <button class="btn-secondary" id="testVoiceBtn" style="margin-top:10px;">🗣️ Test Voice</button>
       <div class="error" id="cohostError"></div>
     </div>
 
-    <footer class="foot">You're a co-auctioneer &mdash; you can register bids, but item and timing settings are controlled by the main host.</footer>
+    <footer class="foot">You're a co-auctioneer &mdash; you can register bids and move to the next item, but timing settings are controlled by the main host.</footer>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
