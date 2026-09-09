@@ -5,12 +5,45 @@ const Speech = (() => {
   let voice = null;
   let errorHandler = null;
 
+  // Common names for female voices across platforms (macOS/iOS, Windows,
+  // Chrome/Android, and cloud voices some browsers expose) — used to pick a
+  // pleasant-sounding female voice by default when one is available.
+  const FEMALE_NAME_HINTS = [
+    'female', 'samantha', 'victoria', 'karen', 'moira', 'tessa', 'fiona', 'ava',
+    'allison', 'susan', 'zira', 'hazel', 'zoe', 'nicky', 'serena', 'kate',
+    'joanna', 'ivy', 'kendra', 'kimberly', 'salli', 'amy', 'emma', 'nicole',
+    'aria', 'jenny', 'michelle', 'sara', 'sonia', 'libby', 'olivia', 'natasha',
+    'catherine', 'linda', 'heather', 'stephanie', 'lucy', 'shelley', 'moira',
+    'anna', 'laura', 'paulina', 'monica', 'ellen', 'flo',
+  ];
+
+  function isEnglish(v) {
+    return /^en\b/i.test(v.lang);
+  }
+
+  function femaleScore(v) {
+    const name = v.name.toLowerCase();
+    if (name.includes('female')) return 2;
+    if (FEMALE_NAME_HINTS.some((hint) => name.includes(hint))) return 1;
+    return 0;
+  }
+
   function pickVoice() {
     if (!('speechSynthesis' in window)) return null;
     const voices = window.speechSynthesis.getVoices();
     if (!voices.length) return null;
-    // Prefer an English voice if available, otherwise just take the default.
-    return voices.find((v) => /en[-_]/i.test(v.lang)) || voices[0];
+
+    const englishVoices = voices.filter(isEnglish);
+    const pool = englishVoices.length ? englishVoices : voices;
+
+    // Prefer the most confidently female-sounding voice available; fall back
+    // to whatever the platform offers if none match.
+    const best = pool.reduce((acc, v) => {
+      const score = femaleScore(v);
+      return !acc || score > acc.score ? { voice: v, score } : acc;
+    }, null);
+
+    return (best && best.voice) || pool[0];
   }
 
   if ('speechSynthesis' in window) {
@@ -71,13 +104,15 @@ const Speech = (() => {
 })();
 
 function announcementVoiceSettings(type) {
+  // Slightly slower than default and a touch of warmth in pitch reads as
+  // smoother/more pleasant than a synthesizer's default flat, rushed cadence.
   switch (type) {
     case 'sold':
-      return { rate: 0.95, pitch: 0.95 };
+      return { rate: 0.9, pitch: 1.05 };
     case 'going_twice':
-      return { rate: 1.02, pitch: 1.0 };
+      return { rate: 0.98, pitch: 1.05 };
     default:
-      return { rate: 1, pitch: 1 };
+      return { rate: 0.95, pitch: 1.05 };
   }
 }
 
