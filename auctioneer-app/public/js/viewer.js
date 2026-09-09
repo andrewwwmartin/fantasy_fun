@@ -52,13 +52,19 @@
     if (soundEnabled) Speech.speak(text, announcementVoiceSettings(type));
   });
 
+  Speech.onError((err) => {
+    viewerError.textContent = `Voice couldn't play (${err}). Check your phone isn't on silent/mute and the volume is up.`;
+  });
+
   els.enableSoundBtn.addEventListener('click', () => {
     soundEnabled = !soundEnabled;
     Speech.setMuted(!soundEnabled);
     if (soundEnabled) {
       els.enableSoundBtn.textContent = '🔊 Sound On';
       els.enableSoundBtn.classList.remove('muted');
+      viewerError.textContent = '';
       // A user gesture is required before most browsers allow speech synthesis.
+      Speech.unlock();
       Speech.speak('Sound enabled.');
     } else {
       els.enableSoundBtn.textContent = '🔇 Sound Off';

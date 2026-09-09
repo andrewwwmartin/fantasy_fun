@@ -3,6 +3,7 @@
 const Speech = (() => {
   let muted = false;
   let voice = null;
+  let errorHandler = null;
 
   function pickVoice() {
     if (!('speechSynthesis' in window)) return null;
@@ -25,6 +26,9 @@ const Speech = (() => {
     if (voice) utter.voice = voice;
     utter.rate = rate;
     utter.pitch = pitch;
+    utter.onerror = (e) => {
+      if (errorHandler) errorHandler(e.error || 'unknown error');
+    };
     window.speechSynthesis.speak(utter);
   }
 
@@ -41,7 +45,29 @@ const Speech = (() => {
     return 'speechSynthesis' in window;
   }
 
-  return { speak, cancel, setMuted, isSupported, get muted() { return muted; } };
+  function onError(cb) {
+    errorHandler = cb;
+  }
+
+  // Many mobile browsers (iOS Safari especially) only allow speech synthesis
+  // to start once a speak() call has happened directly inside a user gesture
+  // (a tap/click handler). Calling this from the first tap on the page
+  // "unlocks" the speech engine so later calls triggered by server messages
+  // (going once/twice/sold, seconds after the tap) are actually allowed to
+  // play. A near-silent, near-instant utterance is enough to do this.
+  function unlock() {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.resume();
+      const primer = new SpeechSynthesisUtterance(' ');
+      primer.volume = 0;
+      window.speechSynthesis.speak(primer);
+    } catch (e) {
+      // Nothing useful to do if this fails; real speak() calls will surface errors.
+    }
+  }
+
+  return { speak, cancel, setMuted, isSupported, onError, unlock, get muted() { return muted; } };
 })();
 
 function announcementVoiceSettings(type) {

@@ -89,7 +89,12 @@
     Speech.speak(text, announcementVoiceSettings(type));
   });
 
+  Speech.onError((err) => {
+    hostError.textContent = `Voice couldn't play (${err}). Check your phone isn't on silent/mute and the volume is up, then tap New Bid again.`;
+  });
+
   els.newBidBtn.addEventListener('click', () => {
+    Speech.unlock();
     const bidLabel = els.bidLabelInput.value.trim();
     socket.emit('host:newBid', { roomId, hostToken, bidLabel }, (res) => {
       if (!res || !res.ok) hostError.textContent = (res && res.error) || 'Could not register the bid.';
@@ -159,11 +164,9 @@
     }
   });
 
-  // A user gesture is required before most browsers allow speech synthesis;
-  // this "warms up" the speech engine as soon as the host taps anything.
+  // Unlock speech synthesis on the very first tap anywhere on the page, so
+  // later announcements triggered by server messages are allowed to play.
   document.body.addEventListener('click', () => {
-    if (Speech.isSupported() && window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-    }
+    Speech.unlock();
   }, { once: true });
 })();
