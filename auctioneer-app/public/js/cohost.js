@@ -90,7 +90,7 @@
   els.muteBtn.addEventListener('click', () => {
     const nowMuted = !Speech.muted;
     Speech.setMuted(nowMuted);
-    els.muteBtn.textContent = nowMuted ? '🔇 Voice Off' : '🔊 Voice On';
+    els.muteBtn.textContent = nowMuted ? '🔇 Voice Disabled' : '🔊 Voice Enabled';
     els.muteBtn.classList.toggle('muted', nowMuted);
   });
 
