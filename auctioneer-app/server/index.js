@@ -182,9 +182,9 @@ function requireHost(room, token) {
   return room && token && room.hostToken === token;
 }
 
-// Co-auctioneers share a link with a separate token and can register bids,
-// undo mistakes, and move on to the next item alongside the primary host,
-// but can't change auction timing settings or hand out further links.
+// Co-auctioneers share a link with a separate token and can do everything
+// the primary host can except hand out further share links: register bids,
+// undo mistakes, move on to the next item, and change item/timing settings.
 function requireBidControl(room, token) {
   return room && token && (room.hostToken === token || room.coHostToken === token);
 }
@@ -231,9 +231,9 @@ io.on('connection', (socket) => {
     cb && cb({ ok: true, state: publicState(room) });
   });
 
-  socket.on('host:configure', ({ roomId, hostToken, itemName, timing } = {}, cb) => {
+  socket.on('host:configure', ({ roomId, token, hostToken, itemName, timing } = {}, cb) => {
     const room = rooms.get(roomId);
-    if (!requireHost(room, hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
+    if (!requireBidControl(room, token || hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
     room.itemName = sanitizeItemName(itemName);
     room.timing = sanitizeTiming(timing);
     broadcastState(room);

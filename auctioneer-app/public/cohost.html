@@ -41,7 +41,32 @@
       <div class="error" id="cohostError"></div>
     </div>
 
-    <footer class="foot">You're a co-auctioneer &mdash; you can register bids and move to the next item, but timing settings are controlled by the main host.</footer>
+    <div class="card">
+      <button class="settings-toggle" id="settingsToggle">⚙ Item &amp; timing settings</button>
+      <div id="settingsPanel" hidden>
+        <label for="itemNameInput">What's being bid on?</label>
+        <input type="text" id="itemNameInput" maxlength="120" />
+
+        <label>Seconds between calls</label>
+        <div class="timing-row">
+          <div>
+            <label for="onceDelay">Once</label>
+            <input type="number" id="onceDelay" min="1" max="30" />
+          </div>
+          <div>
+            <label for="twiceDelay">Twice</label>
+            <input type="number" id="twiceDelay" min="1" max="30" />
+          </div>
+          <div>
+            <label for="soldDelay">Sold</label>
+            <input type="number" id="soldDelay" min="1" max="30" />
+          </div>
+        </div>
+        <button class="btn-primary" id="saveSettingsBtn">Save Settings</button>
+      </div>
+    </div>
+
+    <footer class="foot">You're a co-auctioneer with full controls &mdash; the primary host just holds the only copies of the share links.</footer>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>

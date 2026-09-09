@@ -13,11 +13,11 @@ link so other people can watch and listen live from their own device.
 - **Viewer page** &mdash; a read-only page, reachable via a shareable link
   (with the auction's short code baked in), that mirrors the host's calls in
   real time and speaks them aloud on the viewer's own device too.
-- **Co-auctioneer page** &mdash; a separate shareable link that lets someone
-  else also press **New Bid**, **Undo/Hold**, and **Next Item** from their own
-  device, so two (or more) people can work the room together. Co-auctioneers
-  can't change the auction's timing settings or see other share links &mdash;
-  that stays with whoever started the auction.
+- **Co-auctioneer page** &mdash; a separate shareable link giving someone else
+  full auctioneer controls (New Bid, Undo/Hold, Next Item, and item/timing
+  settings) from their own device, so two (or more) people can run the room
+  together. The one thing they don't get is the other share links &mdash;
+  those stay with whoever started the auction.
 - **Display page** &mdash; a controls-free, big-screen link meant for a TV or
   projector: just the item name, the current bid, the call ("Going once...",
   etc.), and a live countdown to the next call. No sound, no buttons &mdash;

@@ -24,6 +24,13 @@
     nextItemBtn: document.getElementById('nextItemBtn'),
     muteBtn: document.getElementById('muteBtn'),
     testVoiceBtn: document.getElementById('testVoiceBtn'),
+    settingsToggle: document.getElementById('settingsToggle'),
+    settingsPanel: document.getElementById('settingsPanel'),
+    itemNameInput: document.getElementById('itemNameInput'),
+    onceDelay: document.getElementById('onceDelay'),
+    twiceDelay: document.getElementById('twiceDelay'),
+    soldDelay: document.getElementById('soldDelay'),
+    saveSettingsBtn: document.getElementById('saveSettingsBtn'),
   };
 
   let lastState = null;
@@ -36,6 +43,11 @@
     els.statusDisplay.className = `status-display state-${state.status}`;
     els.bidCount.textContent = state.bidCount > 0 ? `Bid #${state.bidCount}` : '';
     els.cancelBtn.disabled = state.status === 'idle';
+
+    if (!els.itemNameInput.matches(':focus')) els.itemNameInput.value = state.itemName;
+    if (!els.onceDelay.matches(':focus')) els.onceDelay.value = state.timing.onceDelay;
+    if (!els.twiceDelay.matches(':focus')) els.twiceDelay.value = state.timing.twiceDelay;
+    if (!els.soldDelay.matches(':focus')) els.soldDelay.value = state.timing.soldDelay;
   }
 
   els.roomBadge.textContent = `Auction ${roomId} · Co-Auctioneer`;
@@ -94,6 +106,27 @@
     socket.emit('host:nextItem', { roomId, token: coHostToken, itemName: nextName }, (res) => {
       if (res && res.ok) renderState(res.state);
       else cohostError.textContent = (res && res.error) || 'Could not move to the next item.';
+    });
+  });
+
+  els.settingsToggle.addEventListener('click', () => {
+    els.settingsPanel.hidden = !els.settingsPanel.hidden;
+  });
+
+  els.saveSettingsBtn.addEventListener('click', () => {
+    const itemName = els.itemNameInput.value.trim();
+    const timing = {
+      onceDelay: Number(els.onceDelay.value) || 3,
+      twiceDelay: Number(els.twiceDelay.value) || 3,
+      soldDelay: Number(els.soldDelay.value) || 3,
+    };
+    socket.emit('host:configure', { roomId, token: coHostToken, itemName, timing }, (res) => {
+      if (res && res.ok) {
+        renderState(res.state);
+        els.settingsPanel.hidden = true;
+      } else {
+        cohostError.textContent = (res && res.error) || 'Could not save settings.';
+      }
     });
   });
 
