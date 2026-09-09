@@ -10,7 +10,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// This app changes fairly often during setup/testing, and a stale cached
+// copy of the JS is a real footgun (a page can look identical while running
+// old logic). Disable caching for these small static files so a normal
+// reload always gets the latest deploy.
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+  setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache'),
+}));
 
 // Standard real-world auctioneer pacing: a few seconds between each call
 // gives the room a chance to jump back in with a counter-bid.
