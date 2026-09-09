@@ -156,6 +156,12 @@ function shareUrlFor(roomId) {
   return url.toString();
 }
 
+function displayShareUrlFor(roomId) {
+  const url = new URL('display.html', window.location.href);
+  url.searchParams.set('room', roomId);
+  return url.toString();
+}
+
 function coHostShareUrlFor(roomId, coHostToken) {
   const url = new URL('cohost.html', window.location.href);
   url.searchParams.set('room', roomId);

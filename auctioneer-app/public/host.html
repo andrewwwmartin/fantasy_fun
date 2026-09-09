@@ -21,6 +21,9 @@
       <div class="status-display state-idle" id="statusDisplay">Waiting to start</div>
       <div class="bid-count" id="bidCount"></div>
 
+      <label for="bidLabelInput">Current bid (optional, e.g. "$150")</label>
+      <input type="text" id="bidLabelInput" maxlength="80" placeholder="Leave blank to just say a bid came in" />
+
       <button class="big-bid-button" id="newBidBtn">🔔 New Bid</button>
 
       <div class="control-row">
@@ -38,9 +41,6 @@
       <div id="settingsPanel" hidden>
         <label for="itemNameInput">What's being bid on?</label>
         <input type="text" id="itemNameInput" maxlength="120" />
-
-        <label for="bidLabelInput">Current bid (optional, e.g. "$150")</label>
-        <input type="text" id="bidLabelInput" maxlength="80" placeholder="Leave blank to just say a bid came in" />
 
         <label>Seconds between calls</label>
         <div class="timing-row">
@@ -73,6 +73,16 @@
         <span id="shareLink">&mdash;</span>
       </div>
       <button class="copy-btn" id="copyBtn">Copy Link</button>
+    </div>
+
+    <div class="card">
+      <h2>Projector display</h2>
+      <p class="hint" style="margin-top:0;">A big, controls-free screen showing just the item, the call, and a countdown &mdash; open this link on a TV or projector for the room to watch.</p>
+      <div class="share-box">
+        <strong>Display link</strong>
+        <span id="displayLink">&mdash;</span>
+      </div>
+      <button class="copy-btn" id="copyDisplayBtn">Copy Display Link</button>
     </div>
 
     <div class="card">

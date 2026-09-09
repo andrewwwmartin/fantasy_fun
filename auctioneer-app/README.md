@@ -18,6 +18,10 @@ link so other people can watch and listen live from their own device.
   device, so two (or more) people can work the room together. Co-auctioneers
   can't change the auction's timing settings or see other share links &mdash;
   that stays with whoever started the auction.
+- **Display page** &mdash; a controls-free, big-screen link meant for a TV or
+  projector: just the item name, the current bid, the call ("Going once...",
+  etc.), and a live countdown to the next call. No sound, no buttons &mdash;
+  just something for the room to watch.
 - Defaults to 3 seconds between each call, a typical real-world auctioneer's
   pace &mdash; adjust it in the settings panel on the host page (or before
   starting the auction) if you want it faster or slower.
@@ -54,7 +58,9 @@ Once it's reachable, the host page shows the auction code and a ready-to-copy
 link (`.../viewer.html?room=CODE`) &mdash; send that link to anyone you want
 watching along. It also shows a separate **co-auctioneer link**
 (`.../cohost.html?room=CODE&token=...`) &mdash; send that one instead to
-anyone you want to be able to press New Bid alongside you.
+anyone you want to be able to press New Bid alongside you &mdash; and a
+**display link** (`.../display.html?room=CODE`) to put up on a TV or
+projector for the room to watch.
 
 ## Notes
 

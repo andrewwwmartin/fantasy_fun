@@ -34,6 +34,8 @@
     coHostLink: document.getElementById('coHostLink'),
     copyCoHostBtn: document.getElementById('copyCoHostBtn'),
     testVoiceBtn: document.getElementById('testVoiceBtn'),
+    displayLink: document.getElementById('displayLink'),
+    copyDisplayBtn: document.getElementById('copyDisplayBtn'),
   };
 
   let lastState = null;
@@ -58,6 +60,7 @@
 
   els.roomCode.textContent = roomId;
   els.shareLink.textContent = shareUrlFor(roomId);
+  els.displayLink.textContent = displayShareUrlFor(roomId);
 
   function renderCoHostLink() {
     els.coHostLink.textContent = coHostToken ? coHostShareUrlFor(roomId, coHostToken) : 'Unavailable';
@@ -179,6 +182,17 @@
       setTimeout(() => { els.copyCoHostBtn.textContent = 'Copy Co-Auctioneer Link'; }, 1500);
     } catch (e) {
       els.coHostLink.textContent = link;
+    }
+  });
+
+  els.copyDisplayBtn.addEventListener('click', async () => {
+    const link = displayShareUrlFor(roomId);
+    try {
+      await navigator.clipboard.writeText(link);
+      els.copyDisplayBtn.textContent = 'Copied!';
+      setTimeout(() => { els.copyDisplayBtn.textContent = 'Copy Display Link'; }, 1500);
+    } catch (e) {
+      els.displayLink.textContent = link;
     }
   });
 

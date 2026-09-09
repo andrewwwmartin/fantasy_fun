@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Digital Auctioneer &mdash; Display</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* This page is meant to fill a TV/projector screen, so it overrides the
+       phone-card layout from style.css with its own full-bleed centered one. */
+    body {
+      padding: 0;
+      align-items: stretch;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .display-screen {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 5vh 6vw;
+      gap: 2vh;
+    }
+
+    .display-badge {
+      font-family: var(--font-body);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+      color: var(--muted);
+    }
+
+    .display-item {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(2rem, 6vw, 4.5rem);
+      line-height: 1.1;
+      max-width: 90vw;
+    }
+
+    .display-bid {
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: clamp(1.1rem, 2.4vw, 2rem);
+      color: var(--accent);
+      min-height: 1.2em;
+    }
+
+    .display-status {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(2.5rem, 8vw, 6.5rem);
+      padding: 3vh 4vw;
+      border-radius: var(--radius-lg);
+      background: var(--panel-solid);
+      border: 3px solid var(--panel-border);
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+      margin-top: 1vh;
+    }
+
+    .display-status.state-idle {
+      color: var(--muted);
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-family: var(--font-body);
+      font-weight: 700;
+    }
+
+    .display-status.state-bid_open {
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .display-status.state-going_once {
+      color: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 6px var(--accent-ring);
+    }
+
+    .display-status.state-going_twice {
+      color: var(--team-red);
+      border-color: var(--team-red);
+      box-shadow: 0 0 0 6px var(--team-red-ring);
+      transform: scale(1.03);
+    }
+
+    .display-status.state-sold {
+      color: var(--ok);
+      border-color: var(--ok);
+      box-shadow: 0 0 0 8px rgba(116, 153, 106, 0.3);
+      animation: sold-pop 0.5s ease;
+    }
+
+    .display-countdown {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(3.5rem, 12vw, 9rem);
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .display-countdown[hidden] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="display-screen">
+    <div class="display-badge" id="roomBadge">Connecting...</div>
+    <div class="display-item" id="itemName">Loading...</div>
+    <div class="display-bid" id="bidLabel">&nbsp;</div>
+    <div class="display-status state-idle" id="statusDisplay">Waiting to start</div>
+    <div class="display-countdown" id="countdown" hidden></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/display.js"></script>
+</body>
+</html>

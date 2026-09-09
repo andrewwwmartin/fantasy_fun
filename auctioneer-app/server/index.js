@@ -79,6 +79,7 @@ function createRoom() {
     itemName: 'this item',
     timing: { ...DEFAULT_TIMING },
     status: 'idle', // idle | bid_open | going_once | going_twice | sold
+    statusStartedAt: Date.now(),
     bidCount: 0,
     currentBidLabel: '',
     timers: [],
@@ -92,6 +93,33 @@ function clearTimers(room) {
   room.timers = [];
 }
 
+function setStatus(room, status) {
+  room.status = status;
+  room.statusStartedAt = Date.now();
+}
+
+// How long the current status lasts before the next call, so clients can
+// render a countdown (e.g. the projector display). idle/sold have no next
+// call scheduled.
+function durationForStatus(room) {
+  switch (room.status) {
+    case 'bid_open':
+      return room.timing.onceDelay * 1000;
+    case 'going_once':
+      return room.timing.twiceDelay * 1000;
+    case 'going_twice':
+      return room.timing.soldDelay * 1000;
+    default:
+      return 0;
+  }
+}
+
+function remainingMsFor(room) {
+  const duration = durationForStatus(room);
+  if (!duration) return 0;
+  return Math.max(0, duration - (Date.now() - room.statusStartedAt));
+}
+
 function publicState(room) {
   return {
     roomId: room.id,
@@ -100,6 +128,7 @@ function publicState(room) {
     status: room.status,
     bidCount: room.bidCount,
     currentBidLabel: room.currentBidLabel,
+    remainingMs: remainingMsFor(room),
   };
 }
 
@@ -115,7 +144,7 @@ function startBidCycle(room, bidLabel) {
   clearTimers(room);
   room.bidCount += 1;
   room.currentBidLabel = bidLabel;
-  room.status = 'bid_open';
+  setStatus(room, 'bid_open');
   broadcastState(room);
 
   const bidText = bidLabel
@@ -124,17 +153,17 @@ function startBidCycle(room, bidLabel) {
   announce(room, 'bid', bidText);
 
   const t1 = setTimeout(() => {
-    room.status = 'going_once';
+    setStatus(room, 'going_once');
     broadcastState(room);
     announce(room, 'going_once', 'Going once...');
 
     const t2 = setTimeout(() => {
-      room.status = 'going_twice';
+      setStatus(room, 'going_twice');
       broadcastState(room);
       announce(room, 'going_twice', 'Going twice...');
 
       const t3 = setTimeout(() => {
-        room.status = 'sold';
+        setStatus(room, 'sold');
         broadcastState(room);
         const soldText = bidLabel
           ? `Sold! ${bidLabel}, for ${room.itemName}.`
@@ -222,7 +251,7 @@ io.on('connection', (socket) => {
     const room = rooms.get(roomId);
     if (!requireBidControl(room, token || hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
     clearTimers(room);
-    room.status = room.bidCount > 0 ? 'bid_open' : 'idle';
+    setStatus(room, room.bidCount > 0 ? 'bid_open' : 'idle');
     broadcastState(room);
     announce(room, 'cancel', 'Hold on...');
     cb && cb({ ok: true });
@@ -232,7 +261,7 @@ io.on('connection', (socket) => {
     const room = rooms.get(roomId);
     if (!requireBidControl(room, token || hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
     clearTimers(room);
-    room.status = 'idle';
+    setStatus(room, 'idle');
     room.bidCount = 0;
     room.currentBidLabel = '';
     if (itemName) room.itemName = sanitizeItemName(itemName);
