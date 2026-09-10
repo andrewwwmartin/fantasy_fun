@@ -135,6 +135,74 @@ input:focus {
   box-shadow: 0 0 0 4px var(--accent-ring);
 }
 
+.player-search {
+  position: relative;
+}
+
+.player-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--panel-solid);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.player-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.player-result:not(:last-child) {
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.player-result:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.player-result:active:not(:disabled) {
+  transform: none;
+}
+
+.player-name {
+  font-weight: 600;
+}
+
+.player-meta {
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.player-result:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.player-result:disabled .player-name {
+  text-decoration: line-through;
+}
+
 .timing-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -497,4 +565,40 @@ footer.foot {
   color: var(--muted);
   font-size: 0.75rem;
   line-height: 1.5;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+
+/* Our own `display: flex` above has the same specificity as the browser's
+   default `[hidden] { display: none }` rule and, coming later in the
+   cascade, would otherwise win — leaving the overlay visible (and
+   intercepting clicks) even while marked hidden. */
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-box {
+  width: 100%;
+  max-width: 420px;
+  background: var(--panel-solid);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  padding: 26px 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.modal-box h2 {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.2rem;
 }

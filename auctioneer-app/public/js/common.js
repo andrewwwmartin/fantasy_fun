@@ -203,6 +203,77 @@ function bindSpacebarShortcut(buttonEl) {
   });
 }
 
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Wires a text input to a small live-search dropdown over the player pool.
+// Free typing is always allowed as-is (the input's value is just used
+// verbatim by whatever form it belongs to) — this only adds an optional
+// pick-from-the-pool shortcut on top. Picking a suggestion fills the input
+// and, if given, calls onSelect (used to auto-submit on pick). `roomId` is
+// optional — without one (e.g. the landing page, before a room exists)
+// nothing is marked as already drafted.
+function initPlayerSearch({ socket, inputEl, resultsEl, roomId, onSelect }) {
+  let debounceTimer = null;
+  let activeQuery = '';
+
+  function hideResults() {
+    resultsEl.hidden = true;
+    resultsEl.innerHTML = '';
+  }
+
+  function renderResults(results) {
+    resultsEl.innerHTML = '';
+    if (!results.length) {
+      hideResults();
+      return;
+    }
+    results.forEach((player) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'player-result' + (player.used ? ' player-result-used' : '');
+      row.disabled = player.used;
+      row.innerHTML = `<span class="player-name">${escapeHtml(player.name)}</span>` +
+        `<span class="player-meta">${escapeHtml(player.pos)} &middot; ${escapeHtml(player.team)}` +
+        `${player.used ? ' &middot; drafted' : ''}</span>`;
+      row.addEventListener('click', () => {
+        inputEl.value = player.name;
+        hideResults();
+        if (onSelect) onSelect(player.name);
+      });
+      resultsEl.appendChild(row);
+    });
+    resultsEl.hidden = false;
+  }
+
+  inputEl.addEventListener('input', () => {
+    const query = inputEl.value.trim();
+    clearTimeout(debounceTimer);
+    if (query.length < 2) {
+      hideResults();
+      return;
+    }
+    debounceTimer = setTimeout(() => {
+      activeQuery = query;
+      socket.emit('players:search', { roomId, query }, (res) => {
+        if (query !== activeQuery) return; // superseded by a newer keystroke
+        if (res && res.ok) renderResults(res.results);
+      });
+    }, 150);
+  });
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hideResults();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target !== inputEl && !resultsEl.contains(e.target)) hideResults();
+  });
+}
+
 function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
 }

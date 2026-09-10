@@ -70,6 +70,21 @@
     <footer class="foot">You're a co-auctioneer with full controls &mdash; the primary host just holds the only copies of the share links.</footer>
   </div>
 
+  <div class="modal-overlay" id="nextItemModal" hidden>
+    <div class="modal-box">
+      <h2>Next Item</h2>
+      <label for="nextItemInput">Search the player pool, or type any name</label>
+      <div class="player-search">
+        <input type="text" id="nextItemInput" placeholder="Start typing a name..." maxlength="120" autocomplete="off" />
+        <div class="player-results" id="nextItemResults" hidden></div>
+      </div>
+      <div class="control-row">
+        <button class="btn-secondary" id="nextItemCancelBtn">Cancel</button>
+        <button class="btn-primary" id="nextItemStartBtn" style="margin-top:0;">Start</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/common.js"></script>
   <script src="js/cohost.js"></script>

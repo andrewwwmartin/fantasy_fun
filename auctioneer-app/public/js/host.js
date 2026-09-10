@@ -38,6 +38,11 @@
     testVoiceBtn: document.getElementById('testVoiceBtn'),
     displayLink: document.getElementById('displayLink'),
     copyDisplayBtn: document.getElementById('copyDisplayBtn'),
+    nextItemModal: document.getElementById('nextItemModal'),
+    nextItemInput: document.getElementById('nextItemInput'),
+    nextItemResults: document.getElementById('nextItemResults'),
+    nextItemCancelBtn: document.getElementById('nextItemCancelBtn'),
+    nextItemStartBtn: document.getElementById('nextItemStartBtn'),
   };
 
   let lastState = null;
@@ -132,13 +137,39 @@
     stepBidInput(els.bidLabelInput, BID_STEP, lastState && lastState.currentBidLabel);
   });
 
-  els.nextItemBtn.addEventListener('click', () => {
-    const nextName = prompt('Name of the next item?', lastState ? lastState.itemName : '');
-    if (nextName === null) return;
+  function submitNextItem(name) {
+    const nextName = name.trim();
+    if (!nextName) return;
     els.bidLabelInput.value = '';
     socket.emit('host:nextItem', { roomId, hostToken, itemName: nextName }, (res) => {
       if (res && res.ok) renderState(res.state);
     });
+    els.nextItemModal.hidden = true;
+  }
+
+  initPlayerSearch({
+    socket,
+    roomId,
+    inputEl: els.nextItemInput,
+    resultsEl: els.nextItemResults,
+    onSelect: submitNextItem,
+  });
+
+  els.nextItemBtn.addEventListener('click', () => {
+    els.nextItemInput.value = '';
+    els.nextItemResults.hidden = true;
+    els.nextItemModal.hidden = false;
+    els.nextItemInput.focus();
+  });
+
+  els.nextItemCancelBtn.addEventListener('click', () => {
+    els.nextItemModal.hidden = true;
+  });
+
+  els.nextItemStartBtn.addEventListener('click', () => submitNextItem(els.nextItemInput.value));
+
+  els.nextItemInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submitNextItem(els.nextItemInput.value);
   });
 
   els.settingsToggle.addEventListener('click', () => {

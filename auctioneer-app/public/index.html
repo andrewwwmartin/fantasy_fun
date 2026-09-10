@@ -20,7 +20,10 @@
       <h2>Start a new auction</h2>
 
       <label for="itemName">What's being bid on?</label>
-      <input type="text" id="itemName" placeholder="e.g. Bijan" maxlength="120" />
+      <div class="player-search">
+        <input type="text" id="itemName" placeholder="e.g. Bijan" maxlength="120" autocomplete="off" />
+        <div class="player-results" id="itemNameResults" hidden></div>
+      </div>
 
       <label>Seconds between calls</label>
       <div class="timing-row">
@@ -59,6 +62,12 @@
   <script src="js/common.js"></script>
   <script>
     const socket = io();
+
+    initPlayerSearch({
+      socket,
+      inputEl: document.getElementById('itemName'),
+      resultsEl: document.getElementById('itemNameResults'),
+    });
 
     document.getElementById('createBtn').addEventListener('click', () => {
       const itemName = document.getElementById('itemName').value.trim();

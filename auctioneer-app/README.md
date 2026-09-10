@@ -25,6 +25,16 @@ link so other people can watch and listen live from their own device.
 - Defaults to 3 seconds between each call, a typical real-world auctioneer's
   pace &mdash; adjust it in the settings panel on the host page (or before
   starting the auction) if you want it faster or slower.
+- **Player pool search** &mdash; useful for a fantasy football auction draft.
+  Typing an item name (on the landing page, or in the "Next Item" box on the
+  host/co-auctioneer page) shows a live search over a built-in player list
+  (FantasyPros consensus top 300, `server/players.json`); picking a
+  suggestion fills the name in and starts the round. A player already
+  nominated in this auction shows up grayed out and struck through rather
+  than being hidden, so you can still see they exist without re-picking them
+  by accident. Free typing always still works too &mdash; nothing requires
+  picking from the list, so a player not in the pool (or a non-fantasy item
+  entirely) works exactly the same as before.
 
 Under the hood it's a small Node/Express server with Socket.IO for real-time
 sync, and plain HTML/CSS/JS on the front end (no build step) using the

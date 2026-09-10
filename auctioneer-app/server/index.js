@@ -36,6 +36,14 @@ app.get('/c/:code/:token', (req, res) => {
   res.redirect(`/cohost.html?room=${room}&token=${token}`);
 });
 
+// Optional player pool for a fantasy-draft-style auction — a static list
+// (currently FantasyPros consensus top 300) searched by name so you don't
+// have to type every player out by hand each round. Purely a search-and-fill
+// convenience: whatever ends up in the item name field, picked from the pool
+// or freely typed, is treated identically by the rest of the app.
+const PLAYER_POOL = JSON.parse(fs.readFileSync(path.join(__dirname, 'players.json'), 'utf8'));
+const PLAYER_SEARCH_LIMIT = 8;
+
 // Standard real-world auctioneer pacing: a few seconds between each call
 // gives the room a chance to jump back in with a counter-bid.
 const DEFAULT_TIMING = {
@@ -78,7 +86,8 @@ function loadRooms() {
     return; // no persisted state yet, or it's unreadable — start fresh
   }
   for (const roomData of saved) {
-    const room = { ...roomData, timers: [] };
+    // usedNames fallback: a room persisted before this field existed.
+    const room = { usedNames: [], ...roomData, timers: [] };
     rooms.set(room.id, room);
     resumeRoom(room);
   }
@@ -138,6 +147,18 @@ function sanitizeItemName(name) {
   return trimmed.length ? trimmed : 'this item';
 }
 
+// Sets room.itemName and, if a real name was actually given (not the empty
+// fallback), records it in usedNames so the player-pool search can gray it
+// out as already nominated. Used by every place itemName can be set,
+// keeping that bookkeeping in one place.
+function setItemName(room, rawName) {
+  room.itemName = sanitizeItemName(rawName);
+  if (typeof rawName === 'string' && rawName.trim()) {
+    const key = room.itemName.toLowerCase();
+    if (!room.usedNames.includes(key)) room.usedNames.push(key);
+  }
+}
+
 function sanitizeBidLabel(label) {
   if (typeof label !== 'string') return '';
   return label.trim().slice(0, 80);
@@ -160,6 +181,7 @@ function createRoom() {
     autoAdvance: false,
     bidCount: 0,
     currentBidLabel: '',
+    usedNames: [], // lowercased item names already nominated, for the player-pool search
     timers: [],
   };
   rooms.set(id, room);
@@ -316,7 +338,7 @@ function requireBidControl(room, token) {
 io.on('connection', (socket) => {
   socket.on('host:create', (payload, cb) => {
     const room = createRoom();
-    room.itemName = sanitizeItemName(payload && payload.itemName);
+    setItemName(room, payload && payload.itemName);
     room.timing = sanitizeTiming(payload && payload.timing);
     socket.join(room.id);
     cb && cb({
@@ -358,7 +380,7 @@ io.on('connection', (socket) => {
   socket.on('host:configure', ({ roomId, token, hostToken, itemName, timing } = {}, cb) => {
     const room = rooms.get(roomId);
     if (!requireBidControl(room, token || hostToken)) return cb && cb({ ok: false, error: 'Not authorized.' });
-    room.itemName = sanitizeItemName(itemName);
+    setItemName(room, itemName);
     room.timing = sanitizeTiming(timing);
     broadcastState(room);
     cb && cb({ ok: true, state: publicState(room) });
@@ -390,9 +412,27 @@ io.on('connection', (socket) => {
     setStatus(room, 'idle');
     room.bidCount = 0;
     room.currentBidLabel = '';
-    if (itemName) room.itemName = sanitizeItemName(itemName);
+    if (itemName) setItemName(room, itemName);
     broadcastState(room);
     cb && cb({ ok: true, state: publicState(room) });
+  });
+
+  socket.on('players:search', ({ roomId, query } = {}, cb) => {
+    const q = typeof query === 'string' ? query.trim().toLowerCase() : '';
+    if (q.length < 2) return cb && cb({ ok: true, results: [] });
+    const room = roomId ? rooms.get(roomId) : null;
+    const results = [];
+    for (const player of PLAYER_POOL) {
+      if (!player.name.toLowerCase().includes(q)) continue;
+      results.push({
+        name: player.name,
+        pos: player.pos,
+        team: player.team,
+        used: room ? room.usedNames.includes(player.name.toLowerCase()) : false,
+      });
+      if (results.length >= PLAYER_SEARCH_LIMIT) break;
+    }
+    cb && cb({ ok: true, results });
   });
 });
 
