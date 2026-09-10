@@ -14,7 +14,10 @@
     bidLabel: document.getElementById('bidLabel'),
     statusDisplay: document.getElementById('statusDisplay'),
     countdown: document.getElementById('countdown'),
+    enableSoundBtn: document.getElementById('enableSoundBtn'),
   };
+
+  let soundEnabled = false;
 
   // Countdown is computed client-side from a single snapshot (remainingMs at
   // the moment the state was received) rather than trusting synced clocks
@@ -81,6 +84,25 @@
 
   socket.on('state', (state) => {
     if (state.roomId === roomId) renderState(state);
+  });
+
+  socket.on('announce', ({ type, text }) => {
+    if (soundEnabled) Speech.speak(text, announcementVoiceSettings(type));
+  });
+
+  els.enableSoundBtn.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    Speech.setMuted(!soundEnabled);
+    if (soundEnabled) {
+      els.enableSoundBtn.textContent = '🔊 Sound On';
+      els.enableSoundBtn.classList.remove('muted');
+      // A user gesture is required before most browsers allow speech synthesis.
+      Speech.unlock();
+      Speech.speak('Sound enabled.');
+    } else {
+      els.enableSoundBtn.textContent = '🔇 Sound Off';
+      els.enableSoundBtn.classList.add('muted');
+    }
   });
 
   setInterval(() => {

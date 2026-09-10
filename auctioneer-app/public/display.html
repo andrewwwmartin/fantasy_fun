@@ -112,6 +112,37 @@
     .display-countdown[hidden] {
       display: none;
     }
+
+    /* Small and out of the way of the main content on purpose — this page
+       is meant to be glanced at, not interacted with, once sound is on. */
+    .display-sound-btn {
+      position: fixed;
+      bottom: 3vh;
+      right: 3vw;
+      padding: 10px 18px;
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: clamp(0.8rem, 1.4vw, 1rem);
+      background: var(--panel-solid);
+      color: var(--text);
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .display-sound-btn.muted {
+      background: linear-gradient(180deg, var(--danger), var(--danger-2));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 0 var(--danger-shadow);
+    }
+
+    .display-sound-btn:active {
+      transform: translateY(4px);
+      box-shadow: none;
+    }
   </style>
 </head>
 <body>
@@ -122,6 +153,8 @@
     <div class="display-status state-idle" id="statusDisplay">Waiting to start</div>
     <div class="display-countdown" id="countdown" hidden></div>
   </div>
+
+  <button class="display-sound-btn" id="enableSoundBtn" type="button">🔊 Tap to Enable Sound</button>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/common.js"></script>

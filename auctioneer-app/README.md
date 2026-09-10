@@ -18,10 +18,12 @@ link so other people can watch and listen live from their own device.
   settings) from their own device, so two (or more) people can run the room
   together. The one thing they don't get is the other share links &mdash;
   those stay with whoever started the auction.
-- **Display page** &mdash; a controls-free, big-screen link meant for a TV or
-  projector: just the item name, the current bid, the call ("Going once...",
-  etc.), and a live countdown to the next call. No sound, no buttons &mdash;
-  just something for the room to watch.
+- **Display page** &mdash; a big-screen link meant for a TV or projector: the
+  item name, the current bid, the call ("Going once...", etc.), and a live
+  countdown to the next call. A small "Tap to Enable Sound" button in the
+  corner turns on the same voice narration as the viewer page (once, before
+  the room gathers round) &mdash; everything else about the page stays
+  controls-free.
 - Defaults to 3 seconds between each call, a typical real-world auctioneer's
   pace &mdash; adjust it in the settings panel on the host page (or before
   starting the auction) if you want it faster or slower.
